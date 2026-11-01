@@ -16,6 +16,12 @@ function applyTransform(module, options, input, testOptions = {}) {
   // Handle ES6 modules using default export for the transform
   const transform = module.default ? module.default : module;
 
+  // The README documents passing the source as a string; transforms expect a
+  // file object.
+  if (typeof input === 'string') {
+    input = { source: input };
+  }
+
   // Jest resets the module registry after each test, so we need to always get
   // a fresh copy of jscodeshift on every test run.
   let jscodeshift = require('./core');

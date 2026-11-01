@@ -37,6 +37,16 @@ describe('testUtils', () => {
       expect(transformedCode).toMatch(/addition/);
     });
 
+    it('should accept the source as a string', () => {
+      const transformedCode = testUtils.applyTransform(
+        testSyncTransform,
+        null,
+        testInputSource
+      );
+
+      expect(transformedCode).toBe(expectedInlineOutput);
+    });
+
     it('should run test', () => {
       testUtils.runTest(
         __dirname,
