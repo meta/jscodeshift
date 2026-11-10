@@ -39,7 +39,7 @@ function run(args, stdin, cwd) {
     let stderr = '';
     jscodeshift.stdout.on('data', data => stdout += data);
     jscodeshift.stderr.on('data', data => stderr += data);
-    jscodeshift.on('close', () => resolve([stdout, stderr]));
+    jscodeshift.on('close', code => resolve([stdout, stderr, code]));
     if (stdin) {
       jscodeshift.stdin.write(stdin);
     }
@@ -105,6 +105,47 @@ describe('jscodeshift CLI', () => {
         expect(readFile(sourceA).toString()).toBe('a');
       }
     );
+  });
+
+  describe.each([false, true])('--run-in-band=%s', runInBand => {
+    const mode = runInBand ? ['--run-in-band'] : [];
+
+    it.each([false, true])(
+      'returns exit code 1 on transform errors with --silent=%s',
+      async silent => {
+        const source = createTempFileWith('a', undefined, '.js');
+        const transform = createTransformWith(
+          'throw new Error("expected failure");'
+        );
+        const args = ['--no-babel', '--fail-on-error', '-t', transform];
+        if (silent) args.push('--silent');
+        const out = await run(args.concat(mode, source));
+        expect(out[0]).toContain('Transformation error (expected failure)');
+        expect(out[2]).toBe(1);
+      }
+    );
+
+    it('returns exit code 0 when a silent transform succeeds', async () => {
+      const source = createTempFileWith('a', undefined, '.js');
+      const transform = createTransformWith('return fileInfo.source;');
+      const out = await run([
+        '--no-babel', '--silent', '--fail-on-error', '-t', transform,
+      ].concat(mode, source));
+      expect(out[0]).toBe('');
+      expect(out[2]).toBe(0);
+    });
+
+    it('returns exit code 0 on errors without --fail-on-error', async () => {
+      const source = createTempFileWith('a', undefined, '.js');
+      const transform = createTransformWith(
+        'throw new Error("expected failure");'
+      );
+      const out = await run([
+        '--no-babel', '--silent', '-t', transform,
+      ].concat(mode, source));
+      expect(out[0]).toContain('Transformation error (expected failure)');
+      expect(out[2]).toBe(0);
+    });
   });
 
   describe('Babel', () => {
