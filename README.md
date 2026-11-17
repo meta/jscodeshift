@@ -458,7 +458,7 @@ For more details on recast config options, see [here](https://github.com/benjamn
 
 ### Unit Testing
 
-jscodeshift comes with a simple utility to allow easy unit testing with [Jest](https://facebook.github.io/jest/), without having to write a lot of boilerplate code. This utility makes some assumptions in order to reduce the amount of configuration required:
+jscodeshift comes with a simple utility to allow easy unit testing with [Jest](https://jestjs.io/), without having to write a lot of boilerplate code. This utility makes some assumptions in order to reduce the amount of configuration required:
 
  - The test is located in a subdirectory under the directory the transform itself is located in (eg. `__tests__`)
  - Test fixtures are located in a `__testfixtures__` directory
@@ -675,7 +675,7 @@ Once this has been added to the configuration
 - [Retain leading comment(s) in file when replacing/removing first statement](recipes/retain-first-comment.md)
 
 [npm]: https://www.npmjs.com/
-[Mozilla Parser API]: https://developer.mozilla.org/en-US/docs/Mozilla/Projects/SpiderMonkey/Parser_API
+[Mozilla Parser API]: https://web.archive.org/web/20200616081604/https://developer.mozilla.org/en-US/docs/Mozilla/Projects/SpiderMonkey/Parser_API
 [recast]: https://github.com/benjamn/recast
 [ast-types]: https://github.com/benjamn/ast-types
 [ast-explorer]: http://astexplorer.net/
