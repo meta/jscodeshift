@@ -272,7 +272,7 @@ building blocks of recast (and ASTs) as well.
 #### AST nodes
 
 An AST node is a plain JavaScript object with a specific set of fields, in
-accordance with the [Mozilla Parser API][]. The primary way to identify nodes
+accordance with the [ESTree][] spec. The primary way to identify nodes
 is via their `type`.
 
 For example, string literals are represented via `Literal` nodes, which
@@ -675,7 +675,7 @@ Once this has been added to the configuration
 - [Retain leading comment(s) in file when replacing/removing first statement](recipes/retain-first-comment.md)
 
 [npm]: https://www.npmjs.com/
-[Mozilla Parser API]: https://web.archive.org/web/20200616081604/https://developer.mozilla.org/en-US/docs/Mozilla/Projects/SpiderMonkey/Parser_API
+[ESTree]: https://github.com/estree/estree
 [recast]: https://github.com/benjamn/recast
 [ast-types]: https://github.com/benjamn/ast-types
 [ast-explorer]: http://astexplorer.net/
