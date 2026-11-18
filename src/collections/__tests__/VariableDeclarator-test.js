@@ -259,6 +259,107 @@ describe('VariableDeclarators', function() {
         ).toBe(1);
       })
     });
+
+    describe('identifiers that are member or label names', function() {
+      function rename(source, parser, oldName) {
+        const ast = recast.parse(source, {parser: getParser(parser)});
+        Collection.fromNodes([ast.program])
+          .findVariableDeclarators(oldName)
+          .renameTo('newName');
+        return recast.print(ast).code;
+      }
+
+      it('does not rename TypeScript interface and type literal members', function() {
+        expect(rename([
+          'const name = 1;',
+          'interface P { name: string; name(): void; [name]: number }',
+          'type T = { name: number };',
+          'foo(name);',
+          'let t: typeof name;',
+        ].join('\n'), 'ts', 'name')).toEqual([
+          'const newName = 1;',
+          'interface P { name: string; name(): void; [newName]: number }',
+          'type T = { name: number };',
+          'foo(newName);',
+          'let t: typeof newName;',
+        ].join('\n'));
+      });
+
+      it('does not rename TypeScript enum members and qualified type names', function() {
+        expect(rename([
+          'const A = 1;',
+          'enum E { A = 2 }',
+          'let e: E.A = E.A;',
+          'foo(A);',
+        ].join('\n'), 'ts', 'A')).toEqual([
+          'const newName = 1;',
+          'enum E { A = 2 }',
+          'let e: E.A = E.A;',
+          'foo(newName);',
+        ].join('\n'));
+      });
+
+      it('does not rename abstract, accessor and private class members', function() {
+        expect(rename([
+          'const count = 1;',
+          'abstract class A {',
+          '  abstract count(): void;',
+          '  accessor count = 0;',
+          '  #count = count;',
+          '  m() { return this.#count; }',
+          '}',
+        ].join('\n'), 'ts', 'count')).toEqual([
+          'const newName = 1;',
+          'abstract class A {',
+          '  abstract count(): void;',
+          '  accessor count = 0;',
+          '  #count = newName;',
+          '  m() { return this.#count; }',
+          '}',
+        ].join('\n'));
+      });
+
+      it('does not rename Flow object type members', function() {
+        expect(rename([
+          'const name = 1;',
+          'type T = { name: number, name(): void };',
+          'foo(name);',
+        ].join('\n'), 'flow', 'name')).toEqual([
+          'const newName = 1;',
+          'type T = { name: number, name(): void };',
+          'foo(newName);',
+        ].join('\n'));
+      });
+
+      it('does not rename import.meta and new.target', function() {
+        expect(rename([
+          'const meta = {};',
+          'const url = new URL("./a", import.meta.url);',
+          'export default meta;',
+        ].join('\n'), 'babylon', 'meta')).toEqual([
+          'const newName = {};',
+          'const url = new URL("./a", import.meta.url);',
+          'export default newName;',
+        ].join('\n'));
+        expect(rename([
+          'const target = 1;',
+          'function F() { return new.target ? target : 0; }',
+        ].join('\n'), 'babylon', 'target')).toEqual([
+          'const newName = 1;',
+          'function F() { return new.target ? newName : 0; }',
+        ].join('\n'));
+      });
+
+      it('does not rename statement labels', function() {
+        expect(rename([
+          'const loop = 1;',
+          'loop: for (;;) { if (loop) break loop; continue loop; }',
+        ].join('\n'), 'babylon', 'loop')).toEqual([
+          'const newName = 1;',
+          'loop: for (;;) { if (newName) break loop; continue loop; }',
+        ].join('\n'));
+      });
+    });
   });
 
 });

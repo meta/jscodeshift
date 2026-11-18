@@ -166,6 +166,60 @@ const transformMethods = {
             return false;
           }
 
+          if (
+            (
+              types.TSPropertySignature.check(parent) ||
+              types.TSMethodSignature.check(parent) ||
+              types.TSDeclareMethod.check(parent) ||
+              types.ClassAccessorProperty.check(parent) ||
+              types.ObjectTypeProperty.check(parent)
+            ) &&
+            parent.key === path.node &&
+            !parent.computed
+          ) {
+            // interface A { oldName: string; oldName(): void }
+            // class A { abstract oldName(): void; accessor oldName = 3 }
+            // type A = { oldName: number } (Flow)
+            return false;
+          }
+
+          if (
+            types.TSEnumMember.check(parent) &&
+            parent.id === path.node
+          ) {
+            // enum A { oldName = 3 }
+            return false;
+          }
+
+          if (
+            types.TSQualifiedName.check(parent) &&
+            parent.right === path.node
+          ) {
+            // let a: A.oldName;
+            return false;
+          }
+
+          if (
+            types.PrivateName.check(parent) ||
+            types.MetaProperty.check(parent)
+          ) {
+            // class A { #oldName = 3 }
+            // import.meta, new.target
+            return false;
+          }
+
+          if (
+            (
+              types.LabeledStatement.check(parent) ||
+              types.BreakStatement.check(parent) ||
+              types.ContinueStatement.check(parent)
+            ) &&
+            parent.label === path.node
+          ) {
+            // oldName: for (;;) { break oldName; }
+            return false;
+          }
+
           return true;
         })
         .forEach(function(path) {
